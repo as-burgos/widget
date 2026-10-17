@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview Widget Música</title>
+  <style>
+    body {
+      background-color: #09090b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .music-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 24px;
+      width: 100%;
+      max-width: 520px;
+      background: #121214;
+      border: 1px solid #27272a;
+      border-radius: 16px;
+      color: #f4f4f5;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.6);
+      box-sizing: border-box;
+    }
+
+    .music-cover {
+      width: 240px;
+      height: 240px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #27272a;
+      flex-shrink: 0;
+    }
+
+    .music-info {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .music-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #10b981;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 1.5s infinite;
+    }
+
+    .music-title {
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.2;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .music-artist {
+      font-size: 1rem;
+      color: #d4d4d8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .music-album {
+      font-size: 0.85rem;
+      color: #71717a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="music-widget" class="music-card">
+    <img id="music-cover" src="https://via.placeholder.com/120/27272a/71717a?text=+" alt="Carátula" class="music-cover" />
+    <div class="music-info">
+      <div class="music-status">
+        <span class="status-dot"></span>
+        <span id="music-state">Escuchando en Tidal</span>
+      </div>
+      <div id="music-title" class="music-title">Cargando...</div>
+      <div id="music-artist" class="music-artist">—</div>
+      <div id="music-album" class="music-album">—</div>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = 'http://51.81.93.173:6147/webhook/widget_musica';
+
+    async function updateNowPlaying() {
+      try {
+        const res = await fetch(WEBHOOK_URL);
+        const rawData = await res.json();
+
+        // Soporta tanto si n8n devuelve un objeto único como si devuelve un array con 1 item
+        const data = Array.isArray(rawData) ? rawData[0] : rawData;
+
+        // Lee "canción" con tilde o sin tilde
+        const cancion = data?.['canción'] || data?.cancion;
+        if (!cancion) return;
+
+        document.getElementById('music-title').textContent = cancion;
+        document.getElementById('music-artist').textContent = data.artista || 'Artista desconocido';
+        document.getElementById('music-album').textContent = data.album || '';
+
+        if (data.caratula) {
+          document.getElementById('music-cover').src = data.caratula;
+        }
+      } catch (err) {
+        console.error('Error al obtener datos del webhook:', err);
+        document.getElementById('music-state').textContent = 'Sin conexión';
+      }
+    }
+
+    updateNowPlaying();
+  </script>
+
+</body>
+</html>
