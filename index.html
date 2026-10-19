@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview Widget Música</title>
+  <!-- Adelanta la negociación DNS, TCP y TLS con tu dominio -->
+  <link rel="preconnect" href="https://n8n.anarkheos.xyz" crossorigin>
   <style>
     body {
       background-color: #09090b;
@@ -104,7 +106,12 @@
 <body>
 
   <div id="music-widget" class="music-card">
-    <img id="music-cover" src="https://via.placeholder.com/120/27272a/71717a?text=+" alt="Carátula" class="music-cover" />
+    <img
+      id="music-cover"
+      src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+      alt="Carátula"
+      class="music-cover"
+    />
     <div class="music-info">
       <div class="music-status">
         <span class="status-dot"></span>
@@ -136,7 +143,13 @@
         document.getElementById('music-album').textContent = data.album || '';
 
         if (data.caratula) {
-          document.getElementById('music-cover').src = data.caratula;
+          const coverEl = document.getElementById('music-cover');
+          // Si el CDN soporta 320x320 (estándar en Tidal), descarga la versión ligera; si falla, vuelve a la original
+          coverEl.onerror = () => {
+            coverEl.onerror = null;
+            coverEl.src = data.caratula;
+          };
+          coverEl.src = data.caratula.replace('1280x1280', '320x320');
         }
       } catch (err) {
         console.error('Error al obtener datos del webhook:', err);
